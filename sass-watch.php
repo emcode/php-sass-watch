@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+define('DS', DIRECTORY_SEPARATOR);
+
 // paths that have matching fragments with this array
 // will be ommited from watching - feel free to change it
 $pathBlacklist = array();
@@ -26,12 +28,11 @@ $pathsWithSassAndCss = array();
 // as we will watch only for those that have it already
 foreach($pathsWithSass as $currentPath)
 {
-   if (is_dir($currentPath . '/css'))
+   if (is_dir($currentPath . DS . 'css'))
    {
        $pathsWithSassAndCss[] = $currentPath;
    }
 }
-
 
 $filteredPaths = array();
 
@@ -64,16 +65,18 @@ if (empty($pathBlacklist))
     }
 }
 
-// print nice message for the user and format
-// sass --watch path parameters
+// print nice message for the user
 $sassWatchParams = array();
 echo 'Watching for styles in:' . PHP_EOL;
 foreach($filteredPaths as $index => $currentTargetPath)
 {
     echo $index . '. ' . $currentTargetPath . PHP_EOL;
-    $sassWatchParams[] = sprintf('%s/sass:%s/css', $currentTargetPath, $currentTargetPath);
+    $sassWatchParams[] = sprintf('%s' . DS . 'sass:%s' . DS . 'css', $currentTargetPath, $currentTargetPath);
 }
 
-$command = sprintf('sass --watch %s',  implode(' ', $sassWatchParams));
-// echo 'Executing command:' . PHP_EOL . $command . PHP_EOL;
+// force initial recompiling
+$command = sprintf('sass --line-numbers --line-comments --force --update %s',  implode(' ', $sassWatchParams));
+system($command);
+// run it in watching mode
+$command = sprintf('sass --line-numbers --line-comments --watch %s',  implode(' ', $sassWatchParams));
 system($command);
